@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +68,14 @@ const Index = () => {
   };
 
   const handleDownload = () => {
-    if (processedTransactions.length === 0) return;
+    if (processedTransactions.length === 0) {
+      toast({
+        title: "No data to download",
+        description: "Please process a file first before downloading",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const csvContent = generateOutputCSV(processedTransactions);
     const filename = `${selectedBank}_transactions_${format(new Date(), 'yyyy-MM-dd')}.csv`;
