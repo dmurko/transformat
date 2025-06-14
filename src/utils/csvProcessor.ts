@@ -120,6 +120,107 @@ export const processN26CSV = (csvContent: string, startDate?: Date): Transaction
   return transactions;
 };
 
+export const processDHCSV = (csvContent: string, startDate?: Date): TransactionData[] => {
+  const lines = csvContent.trim().split('\n');
+  
+  // Find the header line that contains the column names
+  let headerLineIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('Datum valute') && lines[i].includes('Prejemnik')) {
+      headerLineIndex = i;
+      break;
+    }
+  }
+  
+  if (headerLineIndex === -1) {
+    throw new Error('Required columns not found in CSV file. Expected: Datum valute, Prejemnik, Breme, Dobro');
+  }
+  
+  const headers = lines[headerLineIndex].split(';');
+  
+  // Find the indices of the required columns
+  const datumValuteIndex = headers.findIndex(h => h.trim() === 'Datum valute');
+  const prejemnikIndex = headers.findIndex(h => h.trim().includes('Prejemnik'));
+  const bremeIndex = headers.findIndex(h => h.trim() === 'Breme');
+  const dobroIndex = headers.findIndex(h => h.trim() === 'Dobro');
+  
+  if (datumValuteIndex === -1 || prejemnikIndex === -1 || bremeIndex === -1 || dobroIndex === -1) {
+    throw new Error('Required columns not found in CSV file. Expected: Datum valute, Prejemnik, Breme, Dobro');
+  }
+  
+  const transactions: TransactionData[] = [];
+  
+  // Start processing from the line after the header
+  for (let i = headerLineIndex + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim() || !line.includes(';')) continue; // Skip empty lines or lines without semicolons
+    
+    const columns = line.split(';');
+    
+    if (columns.length <= Math.max(datumValuteIndex, prejemnikIndex, bremeIndex, dobroIndex)) {
+      continue; // Skip malformed rows
+    }
+    
+    const datumValute = columns[datumValuteIndex]?.trim();
+    const prejemnik = columns[prejemnikIndex]?.trim();
+    const bremeStr = columns[bremeIndex]?.trim();
+    const dobroStr = columns[dobroIndex]?.trim();
+    
+    if (!datumValute || !prejemnik) {
+      continue; // Skip if essential data is missing
+    }
+    
+    // Parse date from datum valute (format: DD.MM.YYYY)
+    const dateParts = datumValute.split('.');
+    if (dateParts.length !== 3) {
+      continue; // Skip if date format is incorrect
+    }
+    
+    const transactionDate = new Date(
+      parseInt(dateParts[2]), // year
+      parseInt(dateParts[1]) - 1, // month (0-indexed)
+      parseInt(dateParts[0]) // day
+    );
+    
+    // Filter by start date if provided
+    if (startDate && transactionDate < startDate) {
+      continue;
+    }
+    
+    // Parse amounts - handle both Breme (negative) and Dobro (positive)
+    let amount = 0;
+    
+    if (bremeStr && bremeStr !== '') {
+      // Parse Breme amount (negative)
+      const bremeAmount = parseFloat(bremeStr.replace(/\./g, '').replace(',', '.'));
+      if (!isNaN(bremeAmount)) {
+        amount = -bremeAmount;
+      }
+    } else if (dobroStr && dobroStr !== '') {
+      // Parse Dobro amount (positive)
+      const dobroAmount = parseFloat(dobroStr.replace(/\./g, '').replace(',', '.'));
+      if (!isNaN(dobroAmount)) {
+        amount = dobroAmount;
+      }
+    }
+    
+    if (amount === 0) {
+      continue; // Skip if no valid amount found
+    }
+    
+    // Format date as YYYY/MM/DD to match output format
+    const formattedDate = `${dateParts[2]}/${dateParts[1].padStart(2, '0')}/${dateParts[0].padStart(2, '0')}`;
+    
+    transactions.push({
+      date: formattedDate,
+      payee: prejemnik,
+      amount: amount.toFixed(2)
+    });
+  }
+  
+  return transactions;
+};
+
 // Helper function to parse CSV line with quoted fields
 const parseCSVLine = (line: string): string[] => {
   const result: string[] = [];

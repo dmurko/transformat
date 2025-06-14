@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { processMetaMaskCSV, processN26CSV, generateOutputCSV, downloadCSV, TransactionData } from '@/utils/csvProcessor';
+import { processMetaMaskCSV, processN26CSV, processDHCSV, generateOutputCSV, downloadCSV, TransactionData } from '@/utils/csvProcessor';
 import { Header } from '@/components/Header';
 import { BankSelector } from '@/components/BankSelector';
 import { DateSelector } from '@/components/DateSelector';
@@ -37,14 +36,8 @@ const Index = () => {
           transactions = processN26CSV(fileContent, startDate);
           break;
         case 'DH':
-          // TODO: Implement DH processing
-          toast({
-            title: "Not implemented", 
-            description: "DH processing is not yet implemented",
-            variant: "destructive"
-          });
-          setIsProcessing(false);
-          return;
+          transactions = processDHCSV(fileContent, startDate);
+          break;
         default:
           throw new Error('Unsupported bank selected');
       }
