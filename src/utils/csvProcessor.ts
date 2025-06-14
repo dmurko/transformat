@@ -1,3 +1,6 @@
+
+import { sanitizeCSVCell, validateCSVStructure, sanitizeErrorMessage } from './securityUtils';
+
 export interface TransactionData {
   date: string;
   payee: string;
@@ -5,6 +8,11 @@ export interface TransactionData {
 }
 
 export const processMetaMaskCSV = (csvContent: string, startDate?: Date): TransactionData[] => {
+  // Validate CSV structure first
+  if (!validateCSVStructure(csvContent)) {
+    throw new Error('Invalid CSV file structure');
+  }
+
   const lines = csvContent.trim().split('\n');
   const headers = lines[0].split(',');
   
@@ -51,7 +59,7 @@ export const processMetaMaskCSV = (csvContent: string, startDate?: Date): Transa
     
     transactions.push({
       date: formattedDate,
-      payee: merchant,
+      payee: sanitizeCSVCell(merchant),
       amount: `-${amount.toFixed(2)}` // Negative because these are expenses
     });
   }
@@ -60,6 +68,11 @@ export const processMetaMaskCSV = (csvContent: string, startDate?: Date): Transa
 };
 
 export const processN26CSV = (csvContent: string, startDate?: Date): TransactionData[] => {
+  // Validate CSV structure first
+  if (!validateCSVStructure(csvContent)) {
+    throw new Error('Invalid CSV file structure');
+  }
+
   const lines = csvContent.trim().split('\n');
   const headers = lines[0].split(',');
   
@@ -112,7 +125,7 @@ export const processN26CSV = (csvContent: string, startDate?: Date): Transaction
     
     transactions.push({
       date: formattedDate,
-      payee: partnerName,
+      payee: sanitizeCSVCell(partnerName),
       amount: amount.toFixed(2)
     });
   }
@@ -121,6 +134,11 @@ export const processN26CSV = (csvContent: string, startDate?: Date): Transaction
 };
 
 export const processDHCSV = (csvContent: string, startDate?: Date): TransactionData[] => {
+  // Validate CSV structure first
+  if (!validateCSVStructure(csvContent)) {
+    throw new Error('Invalid CSV file structure');
+  }
+
   const lines = csvContent.trim().split('\n');
   
   // Find the header line that contains the column names
@@ -213,7 +231,7 @@ export const processDHCSV = (csvContent: string, startDate?: Date): TransactionD
     
     transactions.push({
       date: formattedDate,
-      payee: prejemnik,
+      payee: sanitizeCSVCell(prejemnik),
       amount: amount.toFixed(2)
     });
   }
@@ -250,9 +268,9 @@ export const generateOutputCSV = (transactions: TransactionData[]): string => {
   
   transactions.forEach(transaction => {
     const line = [
-      transaction.date,
-      transaction.payee,
-      transaction.amount
+      sanitizeCSVCell(transaction.date),
+      `"${sanitizeCSVCell(transaction.payee)}"`, // Quote payee field to handle commas
+      sanitizeCSVCell(transaction.amount)
     ].join(',');
     csvLines.push(line);
   });
@@ -272,5 +290,8 @@ export const downloadCSV = (content: string, filename: string) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the URL object
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   }
 };

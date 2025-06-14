@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { Upload, FileText } from 'lucide-react';
+import { Upload, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { validateFileSize, validateFileExtension, MAX_FILE_SIZE } from '@/utils/securityUtils';
 
 interface FileUploaderProps {
   file: File | null;
@@ -9,10 +11,38 @@ interface FileUploaderProps {
 }
 
 export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
+  const [validationError, setValidationError] = React.useState<string | null>(null);
+
+  const validateFile = (uploadedFile: File): boolean => {
+    setValidationError(null);
+
+    // Check file extension
+    if (!validateFileExtension(uploadedFile)) {
+      setValidationError('Please upload a CSV file with .csv extension');
+      return false;
+    }
+
+    // Check file size
+    if (!validateFileSize(uploadedFile)) {
+      setValidationError(`File size must be less than ${Math.round(MAX_FILE_SIZE / (1024 * 1024))}MB`);
+      return false;
+    }
+
+    // Check MIME type
+    if (uploadedFile.type !== 'text/csv' && uploadedFile.type !== 'application/vnd.ms-excel') {
+      setValidationError('Please upload a valid CSV file');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0];
-    if (uploadedFile && uploadedFile.type === 'text/csv') {
+    if (uploadedFile && validateFile(uploadedFile)) {
       onFileSelect(uploadedFile);
+    } else if (uploadedFile) {
+      onFileSelect(null);
     }
   };
 
@@ -23,14 +53,24 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     const droppedFile = event.dataTransfer.files[0];
-    if (droppedFile && droppedFile.type === 'text/csv') {
+    if (droppedFile && validateFile(droppedFile)) {
       onFileSelect(droppedFile);
+    } else if (droppedFile) {
+      onFileSelect(null);
     }
   };
 
   return (
     <div className="mb-8">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">Upload your CSV file</h3>
+      
+      {validationError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{validationError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -53,7 +93,7 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
               Drop your CSV file here
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              or click to browse your files
+              or click to browse your files (max {Math.round(MAX_FILE_SIZE / (1024 * 1024))}MB)
             </p>
             <input
               type="file"

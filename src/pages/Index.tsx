@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { processMetaMaskCSV, processN26CSV, processDHCSV, generateOutputCSV, downloadCSV, TransactionData } from '@/utils/csvProcessor';
+import { sanitizeErrorMessage } from '@/utils/securityUtils';
 import { Header } from '@/components/Header';
 import { BankSelector } from '@/components/BankSelector';
 import { DateSelector } from '@/components/DateSelector';
@@ -57,9 +59,10 @@ const Index = () => {
     } catch (error) {
       console.error('Error processing file:', error);
       setIsProcessing(false);
+      const userFriendlyMessage = sanitizeErrorMessage(error);
       toast({
         title: "Processing failed",
-        description: error instanceof Error ? error.message : "An error occurred while processing the file",
+        description: userFriendlyMessage,
         variant: "destructive"
       });
     }
