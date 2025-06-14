@@ -31,10 +31,10 @@ export const ResultsCard = ({ isComplete, selectedBank, transactionCount, onDown
               <>
                 <h3 className="text-2xl font-bold mb-2">No Data Found!</h3>
                 <p className="text-red-100">
-                  No transactions were found in your {selectedBank} file
+                  No transactions were found in your {selectedBank} file for the starting date.
                 </p>
                 <p className="text-red-100 text-sm mt-2">
-                  Please check your file and try again
+                  Please choose a different starting date.
                 </p>
               </>
             ) : (
