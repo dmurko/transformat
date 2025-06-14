@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Upload, FileText, Download, Loader2, CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,8 +6,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { processMetaMaskCSV, generateOutputCSV, downloadCSV, TransactionData } from '@/utils/csvProcessor';
 
 const Index = () => {
   const [selectedBank, setSelectedBank] = useState('');
@@ -16,6 +17,8 @@ const Index = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [processedTransactions, setProcessedTransactions] = useState<TransactionData[]>([]);
+  const { toast } = useToast();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0];
@@ -40,11 +43,71 @@ const Index = () => {
     if (!selectedBank || !file) return;
     
     setIsProcessing(true);
-    // Simulate processing time
-    setTimeout(() => {
+    
+    try {
+      const fileContent = await file.text();
+      let transactions: TransactionData[] = [];
+      
+      switch (selectedBank) {
+        case 'MetaMask':
+          transactions = processMetaMaskCSV(fileContent, startDate);
+          break;
+        case 'N26':
+          // TODO: Implement N26 processing
+          toast({
+            title: "Not implemented",
+            description: "N26 processing is not yet implemented",
+            variant: "destructive"
+          });
+          setIsProcessing(false);
+          return;
+        case 'DH':
+          // TODO: Implement DH processing
+          toast({
+            title: "Not implemented", 
+            description: "DH processing is not yet implemented",
+            variant: "destructive"
+          });
+          setIsProcessing(false);
+          return;
+        default:
+          throw new Error('Unsupported bank selected');
+      }
+      
+      console.log(`Processed ${transactions.length} transactions for ${selectedBank}`);
+      setProcessedTransactions(transactions);
+      
+      setTimeout(() => {
+        setIsProcessing(false);
+        setIsComplete(true);
+        toast({
+          title: "Processing complete!",
+          description: `Successfully processed ${transactions.length} transactions`
+        });
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error processing file:', error);
       setIsProcessing(false);
-      setIsComplete(true);
-    }, 3000);
+      toast({
+        title: "Processing failed",
+        description: error instanceof Error ? error.message : "An error occurred while processing the file",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDownload = () => {
+    if (processedTransactions.length === 0) return;
+    
+    const csvContent = generateOutputCSV(processedTransactions);
+    const filename = `${selectedBank}_transactions_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    downloadCSV(csvContent, filename);
+    
+    toast({
+      title: "Download started",
+      description: `Downloaded ${filename}`
+    });
   };
 
   return (
@@ -189,14 +252,14 @@ const Index = () => {
                 <p className="text-green-100">
                   Your {selectedBank} transactions have been successfully processed
                 </p>
+                <p className="text-green-100 text-sm mt-2">
+                  {processedTransactions.length} transactions processed
+                </p>
               </div>
               <Button
                 variant="secondary"
                 className="bg-white text-green-600 hover:bg-gray-100 font-semibold px-6 py-3 shadow-lg"
-                onClick={() => {
-                  // This will be implemented later with actual file processing
-                  console.log('Download processed file');
-                }}
+                onClick={handleDownload}
               >
                 <Download className="mr-2 h-5 w-5" />
                 Download Processed File
