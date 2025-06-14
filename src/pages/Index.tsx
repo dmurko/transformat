@@ -81,6 +81,20 @@ const Index = () => {
     });
   };
 
+  const handleNewTransformation = () => {
+    setSelectedBank('');
+    setStartDate(undefined);
+    setFile(null);
+    setIsComplete(false);
+    setProcessedTransactions([]);
+    toast({
+      title: "Reset complete",
+      description: "Ready for a new transformation"
+    });
+  };
+
+  const isFormDisabled = isProcessing || isComplete;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
       <div className="container mx-auto px-4 py-8">
@@ -89,9 +103,21 @@ const Index = () => {
         {/* Main Form */}
         <Card className="max-w-2xl mx-auto shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
           <CardContent className="p-8">
-            <BankSelector selectedBank={selectedBank} onBankChange={setSelectedBank} />
-            <DateSelector startDate={startDate} onDateChange={setStartDate} />
-            <FileUploader file={file} onFileSelect={setFile} />
+            <BankSelector 
+              selectedBank={selectedBank} 
+              onBankChange={setSelectedBank}
+              disabled={isFormDisabled}
+            />
+            <DateSelector 
+              startDate={startDate} 
+              onDateChange={setStartDate}
+              disabled={isFormDisabled}
+            />
+            <FileUploader 
+              file={file} 
+              onFileSelect={setFile}
+              disabled={isFormDisabled}
+            />
             <ProcessingButton 
               isProcessing={isProcessing}
               disabled={!selectedBank || !file || isProcessing}
@@ -105,6 +131,7 @@ const Index = () => {
           selectedBank={selectedBank}
           transactionCount={processedTransactions.length}
           onDownload={handleDownload}
+          onNewTransformation={handleNewTransformation}
         />
       </div>
     </div>

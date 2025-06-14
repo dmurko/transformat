@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Download } from 'lucide-react';
+import { Download, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -9,9 +9,10 @@ interface ResultsCardProps {
   selectedBank: string;
   transactionCount: number;
   onDownload: () => void;
+  onNewTransformation: () => void;
 }
 
-export const ResultsCard = ({ isComplete, selectedBank, transactionCount, onDownload }: ResultsCardProps) => {
+export const ResultsCard = ({ isComplete, selectedBank, transactionCount, onDownload, onNewTransformation }: ResultsCardProps) => {
   return (
     <div className={`transition-all duration-700 transform ${isComplete ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'} ${isComplete ? 'block' : 'hidden'}`}>
       <Card className="max-w-2xl mx-auto mt-8 shadow-2xl border-0 bg-gradient-to-r from-green-500 to-emerald-500 text-white">
@@ -28,14 +29,24 @@ export const ResultsCard = ({ isComplete, selectedBank, transactionCount, onDown
               {transactionCount} transactions processed
             </p>
           </div>
-          <Button
-            variant="secondary"
-            className="bg-white text-green-600 hover:bg-gray-100 font-semibold px-6 py-3 shadow-lg"
-            onClick={onDownload}
-          >
-            <Download className="mr-2 h-5 w-5" />
-            Download Processed File
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              variant="secondary"
+              className="bg-white text-green-600 hover:bg-gray-100 font-semibold px-6 py-3 shadow-lg"
+              onClick={onDownload}
+            >
+              <Download className="mr-2 h-5 w-5" />
+              Download Processed File
+            </Button>
+            <Button
+              variant="outline"
+              className="border-white text-white hover:bg-white/10 font-semibold px-6 py-3 shadow-lg"
+              onClick={onNewTransformation}
+            >
+              <RefreshCcw className="mr-2 h-5 w-5" />
+              New Transformation
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

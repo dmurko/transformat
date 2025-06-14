@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Upload, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,10 @@ import { validateFileSize, validateFileExtension, MAX_FILE_SIZE } from '@/utils/
 interface FileUploaderProps {
   file: File | null;
   onFileSelect: (file: File | null) => void;
+  disabled?: boolean;
 }
 
-export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
+export const FileUploader = ({ file, onFileSelect, disabled = false }: FileUploaderProps) => {
   const [validationError, setValidationError] = React.useState<string | null>(null);
 
   const validateFile = (uploadedFile: File): boolean => {
@@ -37,6 +39,8 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    
     const uploadedFile = event.target.files?.[0];
     if (uploadedFile && validateFile(uploadedFile)) {
       onFileSelect(uploadedFile);
@@ -46,10 +50,13 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
   };
 
   const handleDragOver = (event: React.DragEvent) => {
+    if (disabled) return;
     event.preventDefault();
   };
 
   const handleDrop = (event: React.DragEvent) => {
+    if (disabled) return;
+    
     event.preventDefault();
     const droppedFile = event.dataTransfer.files[0];
     if (droppedFile && validateFile(droppedFile)) {
@@ -73,7 +80,11 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center transition-all hover:border-green-400 hover:bg-green-50/50"
+        className={`border-2 border-dashed rounded-lg p-4 text-center transition-all ${
+          disabled 
+            ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' 
+            : 'border-gray-300 hover:border-green-400 hover:bg-green-50/50'
+        }`}
       >
         {file ? (
           <div className="flex items-center justify-center space-x-3">
@@ -100,11 +111,15 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
               onChange={handleFileUpload}
               className="hidden"
               id="file-upload"
+              disabled={disabled}
             />
             <Button
               variant="outline"
-              onClick={() => document.getElementById('file-upload')?.click()}
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              onClick={() => !disabled && document.getElementById('file-upload')?.click()}
+              className={`border-green-300 text-green-700 hover:bg-green-50 ${
+                disabled ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={disabled}
             >
               Browse Files
             </Button>
