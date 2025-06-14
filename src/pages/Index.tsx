@@ -63,7 +63,7 @@ const Index = () => {
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Select your bank</h3>
               <RadioGroup value={selectedBank} onValueChange={setSelectedBank}>
                 <div className="grid grid-cols-3 gap-4">
-                  {['N26', 'Revolut', 'DH'].map((bank) => (
+                  {['N26', 'MetaMask', 'DH'].map((bank) => (
                     <div key={bank} className="relative">
                       <RadioGroupItem value={bank} id={bank} className="peer sr-only" />
                       <Label
