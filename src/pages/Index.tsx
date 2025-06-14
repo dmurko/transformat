@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { processMetaMaskCSV, generateOutputCSV, downloadCSV, TransactionData } from '@/utils/csvProcessor';
+import { processMetaMaskCSV, processN26CSV, generateOutputCSV, downloadCSV, TransactionData } from '@/utils/csvProcessor';
 
 const Index = () => {
   const [selectedBank, setSelectedBank] = useState('');
@@ -53,14 +53,8 @@ const Index = () => {
           transactions = processMetaMaskCSV(fileContent, startDate);
           break;
         case 'N26':
-          // TODO: Implement N26 processing
-          toast({
-            title: "Not implemented",
-            description: "N26 processing is not yet implemented",
-            variant: "destructive"
-          });
-          setIsProcessing(false);
-          return;
+          transactions = processN26CSV(fileContent, startDate);
+          break;
         case 'DH':
           // TODO: Implement DH processing
           toast({

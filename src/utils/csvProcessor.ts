@@ -1,4 +1,3 @@
-
 export interface TransactionData {
   date: string;
   payee: string;
@@ -58,6 +57,90 @@ export const processMetaMaskCSV = (csvContent: string, startDate?: Date): Transa
   }
   
   return transactions;
+};
+
+export const processN26CSV = (csvContent: string, startDate?: Date): TransactionData[] => {
+  const lines = csvContent.trim().split('\n');
+  const headers = lines[0].split(',');
+  
+  // Find the indices of the required columns
+  const valueDateIndex = headers.findIndex(h => h.trim().replace(/"/g, '') === 'Value Date');
+  const partnerNameIndex = headers.findIndex(h => h.trim().replace(/"/g, '') === 'Partner Name');
+  const amountIndex = headers.findIndex(h => h.trim().replace(/"/g, '') === 'Amount (EUR)');
+  
+  if (valueDateIndex === -1 || partnerNameIndex === -1 || amountIndex === -1) {
+    throw new Error('Required columns not found in CSV file. Expected: Value Date, Partner Name, Amount (EUR)');
+  }
+  
+  const transactions: TransactionData[] = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue; // Skip empty lines
+    
+    // Parse CSV line accounting for quoted fields
+    const columns = parseCSVLine(line);
+    
+    if (columns.length <= Math.max(valueDateIndex, partnerNameIndex, amountIndex)) {
+      continue; // Skip malformed rows
+    }
+    
+    const valueDate = columns[valueDateIndex]?.trim().replace(/"/g, '');
+    const partnerName = columns[partnerNameIndex]?.trim().replace(/"/g, '');
+    const amountStr = columns[amountIndex]?.trim().replace(/"/g, '');
+    
+    if (!valueDate || !partnerName || !amountStr) {
+      continue; // Skip if essential data is missing
+    }
+    
+    // Parse date from value date (format: YYYY-MM-DD)
+    const transactionDate = new Date(valueDate);
+    
+    // Filter by start date if provided
+    if (startDate && transactionDate < startDate) {
+      continue;
+    }
+    
+    // Parse amount
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount)) {
+      continue; // Skip if amount is not a valid number
+    }
+    
+    // Format date as YYYY/MM/DD to match output format
+    const formattedDate = valueDate.replace(/-/g, '/');
+    
+    transactions.push({
+      date: formattedDate,
+      payee: partnerName,
+      amount: amount.toFixed(2)
+    });
+  }
+  
+  return transactions;
+};
+
+// Helper function to parse CSV line with quoted fields
+const parseCSVLine = (line: string): string[] => {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current); // Add the last field
+  return result;
 };
 
 export const generateOutputCSV = (transactions: TransactionData[]): string => {
