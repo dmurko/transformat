@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Upload, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -61,11 +60,11 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
   };
 
   return (
-    <div className="mb-8">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Upload your CSV file</h3>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">Upload your CSV file</h3>
       
       {validationError && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="mb-3">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{validationError}</AlertDescription>
         </Alert>
@@ -74,11 +73,11 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all hover:border-green-400 hover:bg-green-50/50"
+        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center transition-all hover:border-green-400 hover:bg-green-50/50"
       >
         {file ? (
           <div className="flex items-center justify-center space-x-3">
-            <FileText className="h-8 w-8 text-green-600" />
+            <FileText className="h-6 w-6 text-green-600" />
             <div>
               <p className="font-medium text-gray-800">{file.name}</p>
               <p className="text-sm text-gray-500">
@@ -88,12 +87,12 @@ export const FileUploader = ({ file, onFileSelect }: FileUploaderProps) => {
           </div>
         ) : (
           <div>
-            <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-lg font-medium text-gray-700 mb-2">
+            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-base font-medium text-gray-700 mb-1">
               Drop your CSV file here
             </p>
-            <p className="text-sm text-gray-500 mb-4">
-              or click to browse your files (max {Math.round(MAX_FILE_SIZE / (1024 * 1024))}MB)
+            <p className="text-sm text-gray-500 mb-3">
+              or click to browse (max {Math.round(MAX_FILE_SIZE / (1024 * 1024))}MB)
             </p>
             <input
               type="file"
