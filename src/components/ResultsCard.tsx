@@ -40,7 +40,7 @@ export const ResultsCard = ({ isComplete, selectedBank, transactionCount, onDown
             </Button>
             <Button
               variant="outline"
-              className="border-white text-white hover:bg-white/10 font-semibold px-6 py-3 shadow-lg"
+              className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-green-600 font-semibold px-6 py-3 shadow-lg"
               onClick={onNewTransformation}
             >
               <RefreshCcw className="mr-2 h-5 w-5" />
