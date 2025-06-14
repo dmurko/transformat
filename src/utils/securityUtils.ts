@@ -6,8 +6,16 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 export const sanitizeCSVCell = (value: string): string => {
   if (!value || typeof value !== 'string') return '';
   
-  // Check if the cell starts with dangerous characters
-  const dangerousChars = ['=', '+', '-', '@', '\t', '\r'];
+  // Check if this is a valid number (including negative numbers)
+  const isNumber = /^-?\d+(\.\d+)?$/.test(value.trim());
+  
+  if (isNumber) {
+    // For valid numbers, return as-is without sanitization
+    return value;
+  }
+  
+  // Check if the cell starts with dangerous characters (excluding minus for numbers)
+  const dangerousChars = ['=', '+', '@', '\t', '\r'];
   const firstChar = value.charAt(0);
   
   if (dangerousChars.includes(firstChar)) {
