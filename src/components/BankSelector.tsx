@@ -19,7 +19,11 @@ export const BankSelector = ({ selectedBank, onBankChange }: BankSelectorProps) 
               <RadioGroupItem value={bank} id={bank} className="peer sr-only" />
               <Label
                 htmlFor={bank}
-                className="flex items-center justify-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-all hover:border-green-300 peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700"
+                className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-green-300 ${
+                  selectedBank === bank 
+                    ? 'border-green-500 bg-green-50 text-green-700' 
+                    : 'border-gray-200'
+                }`}
               >
                 <span className="font-medium">{bank}</span>
               </Label>
