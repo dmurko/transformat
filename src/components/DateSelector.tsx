@@ -38,6 +38,7 @@ export const DateSelector = ({ startDate, onDateChange, disabled = false }: Date
             selected={startDate}
             onSelect={disabled ? undefined : onDateChange}
             initialFocus
+            weekStartsOn={1}
             className={cn("p-3 pointer-events-auto")}
             disabled={disabled}
           />
